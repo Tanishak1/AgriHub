@@ -1,0 +1,124 @@
+// Prisma Schema for AgriHub
+
+datasource db {
+  provider = "sqlite" // Change to "postgresql" to run with a Postgres container/server
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  name          String
+  phone         String?
+  location      String?
+  role          String         @default("FARMER") // FARMER, TECHNICIAN, ADMIN
+  language      String         @default("EN")     // EN, HI
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  farms         Farm[]
+  notifications Notification[]
+}
+
+model Farm {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fields    Field[]
+  devices   Device[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Field {
+  id         String      @id @default(uuid())
+  name       String
+  size       Float       // in acres
+  farmId     String
+  farm       Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  cropCycles CropCycle[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model CropCycle {
+  id        String    @id @default(uuid())
+  cropName  String
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  status    String    @default("ACTIVE") // ACTIVE, HARVESTED, FAILED
+  fieldId   String
+  field     Field     @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Device {
+  id              String   @id // User defined or auto, e.g. "AGR-001"
+  name            String
+  status          String   @default("DISCONNECTED") // CONNECTED, DISCONNECTED, CONNECTING, ERROR, UPDATING
+  type            String   @default("SIMULATOR")    // ESP32, ARDUINO, SIMULATOR
+  firmwareVersion String   @default("1.0.0")
+  lastSeen        DateTime @default(now())
+  farmId          String
+  farm            Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  sensors         Sensor[]
+  alerts          Alert[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Sensor {
+  id             String          @id @default(uuid())
+  type           String          // SOIL_MOISTURE, TEMPERATURE, HUMIDITY, RAINFALL, SOUND, VIBRATION
+  name           String
+  status         String          @default("NORMAL") // NORMAL, WARNING, CRITICAL, FAILURE
+  unit           String
+  currentReading Float           @default(0.0)
+  minThreshold   Float?
+  maxThreshold   Float?
+  deviceId       String
+  device         Device          @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  readings       SensorReading[]
+  alerts         Alert[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model SensorReading {
+  id        String   @id @default(uuid())
+  sensorId  String
+  sensor    Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  value     Float
+  unit      String
+  timestamp DateTime @default(now())
+}
+
+model Alert {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  severity    String   @default("INFO") // INFO, WARNING, CRITICAL
+  isRead      Boolean  @default(false)
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  sensorId    String?
+  sensor      Sensor?  @relation(fields: [sensorId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

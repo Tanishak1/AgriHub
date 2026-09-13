@@ -1,0 +1,23 @@
+{
+  "name": "agrihub-hardware-bridge",
+  "version": "1.0.0",
+  "description": "AgriHub Standalone Device Communication Bridge",
+  "main": "dist/bridge.js",
+  "scripts": {
+    "dev": "ts-node src/bridge.ts",
+    "list-ports": "ts-node src/listPorts.ts",
+    "start": "node dist/bridge.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "serialport": "^12.0.0",
+    "@serialport/parser-readline": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
