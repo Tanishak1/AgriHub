@@ -64,9 +64,9 @@ const normalizePacketReadings = (packet: SerialPacket): HardwareSensorReading[] 
     { keys: ['temperature', 'temp', 'airTemperature'], sensorType: 'TEMPERATURE', unit: '°C' },
     { keys: ['humidity', 'relativeHumidity'], sensorType: 'HUMIDITY', unit: '%' },
     { keys: ['soilMoisture', 'soil_moisture', 'soilMoisturePercentage'], sensorType: 'SOIL_MOISTURE', unit: '%' },
-    { keys: ['rainRaw', 'rainfall', 'rain', 'rainfallRaw'], sensorType: 'RAINFALL', unit: '%' },
-    { keys: ['microphoneRaw', 'sound', 'microphone', 'noiseLevel'], sensorType: 'SOUND', unit: 'dB' },
-    { keys: ['vibrationDetected', 'vibrationRaw', 'vibration', 'vibrationLevel'], sensorType: 'VIBRATION', unit: 'Hz' },
+    { keys: ['rainRaw', 'rainfall', 'rain', 'rainfallRaw'], sensorType: 'RAINFALL', unit: 'raw' },
+    { keys: ['microphoneRaw', 'sound', 'microphone', 'noiseLevel'], sensorType: 'SOUND', unit: 'raw' },
+    { keys: ['vibrationDetected', 'vibrationRaw', 'vibration', 'vibrationLevel'], sensorType: 'VIBRATION', unit: 'state' },
   ];
 
   for (const { keys, sensorType } of keyMap) {
