@@ -71,11 +71,11 @@ export const addDevice = async (req: AuthRequest, res: Response) => {
     // Automatically provision default sensors for this type of agricultural device
     const defaultSensors = [
       { type: 'SOIL_MOISTURE', name: 'Soil Moisture Sensor', unit: '%', min: 25, max: 80 },
-      { type: 'TEMPERATURE', name: 'DHT22 Air Temperature', unit: '°C', min: 15, max: 38 },
-      { type: 'HUMIDITY', name: 'DHT22 Air Humidity', unit: '%', min: 20, max: 90 },
-      { type: 'RAINFALL', name: 'Rainfall Gauge', unit: '%', min: 0, max: 80 },
-      { type: 'SOUND', name: 'Microphone Decibel', unit: 'dB', min: 0, max: 85 },
-      { type: 'VIBRATION', name: 'Vibration Hz', unit: 'Hz', min: 0, max: 30 },
+      { type: 'TEMPERATURE', name: 'DHT11 Air Temperature', unit: '°C', min: 15, max: 38 },
+      { type: 'HUMIDITY', name: 'DHT11 Air Humidity', unit: '%', min: 20, max: 90 },
+      { type: 'RAINFALL', name: 'Rain/Wetness Sensor', unit: 'raw', min: 0, max: null },
+      { type: 'SOUND', name: 'Microphone Sensor', unit: 'raw', min: 0, max: null },
+      { type: 'VIBRATION', name: 'Vibration Detection', unit: 'state', min: 0, max: 1 },
     ];
 
     for (const sensor of defaultSensors) {
