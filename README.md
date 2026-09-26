@@ -1,119 +1,162 @@
-# AgriHub — Smart IoT Agriculture & AI Advisor
+# AgriHub — Smart Agriculture Platform for Low-Connectivity Environments
 
-AgriHub is a smart farming web application designed to integrate real-time physical telemetry with agronomy recommendations. The platform supports agricultural monitoring, warning alerts, bilingual advisories, and microcontroller serial streaming.
+AgriHub is a smart farming prototype that combines ESP32-based field sensing, local serial telemetry, a web dashboard, alerts, and sensor-driven advisory logic. It is designed to keep field data acquisition useful in low-connectivity environments by allowing the ESP32 to communicate locally with the hardware bridge before data is forwarded to the backend when the local system is available.
 
----
+> **SIH 2026 context:** AgriHub is being developed against Problem Statement **26180** in the Agriculture / FoodTech / Rural Development domain.
 
-## Technical Architecture
+## Current Prototype
+
+The implemented prototype uses:
+
+- ESP32 microcontroller
+- DHT11 temperature and humidity sensor
+- Soil-moisture sensor
+- Rain / wetness sensor
+- Microphone / sound sensor
+- Vibration sensor
+- USB serial hardware bridge
+- React + TypeScript farmer dashboard
+- Express + TypeScript backend
+- Prisma with SQLite for local development
+- Socket.IO for live dashboard updates
+- JWT-based authentication and farm ownership checks
+
+## System Architecture
 
 ```text
-Field Sensor Probes (Soil Moisture, DHT22)
-       ↓
-Physical ESP32 Microcontroller
-       ↓
-USB-C Serial / COM Port Link
-       ↓
-Laptop (running direct Web Serial OR standalone bridge)
-       ↓
-Express REST API & Socket.IO (WebSockets)
-       ↓
-SQLite / PostgreSQL Relational Database
-       ↓
-Vite + React Dashboard (TypeScript & Tailwind)
+Field Sensors
+  │
+  ├─ DHT11 (temperature + humidity)
+  ├─ Soil moisture
+  ├─ Rain / wetness
+  ├─ Microphone
+  └─ Vibration
+        │
+        ▼
+      ESP32
+        │
+        │ USB Serial / local connection
+        ▼
+ Hardware Bridge
+        │
+        ▼
+ Express REST API + Socket.IO
+        │
+        ├─ Prisma / SQLite
+        └─ Advisory + alert logic
+        │
+        ▼
+ React + TypeScript Dashboard
 ```
 
----
+This architecture does **not depend on a continuous field internet link for sensor acquisition**. The current prototype uses a local ESP32-to-computer serial path. Cloud/off-site synchronization can be added separately where connectivity is available.
 
-## Core Feature Index
+## Telemetry Semantics
 
-1. **Bilingual Navigation & Localization (English & Hindi)**: Supports persistent language selection switching labels, dashboard widgets, telemetry notifications, and error flags.
-2. **Setup Instructions (Tabs 1, 2, 3)**: Provides visual guides and physical field placement coordinates for sensors (Soil Moisture fork, DHT22 shield, Rain collector, Boundary Microphone, Geophone).
-3. **Interactive Telemetry Dashboard**: Renders real-time value changes in a 6-sensor grid synced via Socket.IO, displaying thresholds warnings.
-4. **AI Agronomist Advisor**: Generates task advisories, risk ratings, and speaks them aloud via HTML5 Web Speech Synthesis in Hindi/English.
-5. **Web Serial Pairing**: Connects directly to USB-C ports from Chrome/Edge browsers, displaying a raw serial command interface stream.
-6. **Physical Hardware Bridge**: Reads newline-delimited JSON from a configured USB serial port and forwards validated telemetry.
-7. **Protected Authentication & Admin panel**: JWT sessions validation and access management dashboards auditing system logs.
+| Sensor | Stored/display unit | Notes |
+|---|---|---|
+| DHT11 temperature | °C | Physical temperature reading |
+| DHT11 humidity | % | Relative humidity |
+| Soil moisture | % | Converted moisture value when percentage conversion is available |
+| Rain / wetness | raw | Sensor/ADC evidence; not rainfall probability |
+| Microphone | raw | Sensor amplitude; not calibrated dB |
+| Vibration | state/raw | Detection state or raw intensity; not calibrated Hz |
 
----
+**Important:** raw rain, microphone, and vibration readings must not be presented as calibrated physical units unless the sensors have been calibrated and the conversion is implemented.
 
-## Installation & Deployment Guide
+## Implemented Features
 
-### 1. Requirements
-Ensure **Node.js (v18+)** and **npm** are installed.
+- Farmer authentication with JWT
+- Farm ownership validation
+- Device registration and sensor provisioning
+- ESP32 serial telemetry ingestion
+- Live telemetry delivery through Socket.IO
+- Sensor history storage
+- Threshold-based warning states
+- Hardware connection diagnostics
+- English/Hindi interface support
+- Sensor-driven advisory endpoint
+- Admin functionality included in the application
 
-### 2. Standard SQLite Quick-Start (Zero Configuration)
-To run the entire system instantly using a local SQLite database file:
+Some advanced agriculture capabilities are part of the broader project roadmap. The repository should not be interpreted as evidence that every planned AI model or field experiment has already been validated.
 
-1. Clone or navigate to the project directory root.
-2. Install packages for root, backend, frontend, and bridge concurrently:
-   ```bash
-   npm run install:all
-   ```
-3. Initialize the local database and run the migrations:
-   ```bash
-   npm run db:migrate
-   ```
-   *(Note: This automatically initializes `prisma/schema.prisma` and seeds default credentials and 24 hours of logs).*
-4. Start both the Backend Server and Vite Frontend concurrently:
-   ```bash
-   npm run dev
-   ```
-5. Open your browser and navigate to:
-   - **Frontend Dashboard**: `http://localhost:5173`
-   - **Backend Status API**: `http://localhost:5000/status`
+## Quick Start
 
----
+### Requirements
 
-### 3. Deploying with PostgreSQL (Docker-Compose Option)
-To switch from local development SQLite to a PostgreSQL cluster using Docker:
+- Node.js 18+
+- npm
+- A Chromium-based browser for browser serial features, where used
+- ESP32 hardware only when testing physical telemetry
 
-1. Launch the Postgres database cluster:
-   ```bash
-   docker-compose up -d postgres
-   ```
-2. Modify the database provider and target URL:
-   - Open `backend/prisma/schema.prisma` and change:
-     ```prisma
-     datasource db {
-       provider = "postgresql"
-       url      = env("DATABASE_URL")
-     }
-     ```
-   - In `backend/.env`, uncomment the PostgreSQL configuration line and comment out SQLite:
-     ```env
-     DATABASE_URL="postgresql://postgres:postgrespassword@localhost:5432/agrihub?schema=public"
-     ```
-3. Regenerate client assets and push structures:
-   ```bash
-   npm run db:migrate
-   ```
-4. Boot services using concurrently or standard commands.
+### Install
 
----
+```bash
+git clone https://github.com/Tanishak1/AgriHub.git
+cd AgriHub
+npm run install:all
+```
 
-## Pre-Configured Test Accounts
-Use the seeded credentials to log in:
+### Initialize the local database
 
-- **Farmer Profile**:
-  - **Email**: `farmer@agrihub.com`
-  - **Password**: `password123`
-- **Admin Dashboard**:
-  - **Email**: `admin@agrihub.com`
-  - **Password**: `password123`
+```bash
+npm run db:migrate
+```
 
----
+### Run the application
 
-## Automated Verification Tests
-Run the custom test suite validating cryptography, auth controllers, database CRUD, and threshold alerts:
+```bash
+npm run dev
+```
+
+Default local endpoints:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5000`
+
+### Run the hardware bridge
+
+Configure the serial port in the hardware-bridge environment file, then run:
+
+```bash
+npm run dev --prefix hardware-bridge
+```
+
+Typical bridge settings:
+
+```env
+HARDWARE_PORT=COM5
+HARDWARE_BAUD_RATE=115200
+DEVICE_ID=ESP32_AGRIHUB
+BACKEND_URL=http://localhost:5000/api/devices/telemetry
+```
+
+The COM port can differ between computers. Use the port assigned to the ESP32 on the machine running the bridge.
+
+## Sensor Wiring Used by the Prototype
+
+| Component | ESP32 GPIO |
+|---|---:|
+| DHT11 | 4 |
+| Soil moisture | 34 |
+| Rain / wetness | 32 |
+| Microphone | 35 |
+| Vibration | 27 |
+| LED | 25 |
+| Buzzer | 26 |
+
+Sensor sampling interval used in the prototype firmware: approximately **2000 ms**.
+
+## Backend Tests
+
 ```bash
 npm run test --prefix backend
 ```
 
----
+## Project Status
 
-## Running the Standalone Bridge Client (Headless deployment)
-To stream telemetry from a standalone terminal:
-```bash
-npm run dev --prefix hardware-bridge
-```
-This boots a background logger transmitting structured sensor data every 5 seconds to the REST server.
+AgriHub is an active prototype. Hardware readings, calibration, advisory rules, and field validation should be treated according to the evidence available from the actual implementation. The project is being refined for reliable demonstrations and future field testing.
+
+## Team
+
+Developed as the **AgriHub** smart-farming project by Team Revengers.
