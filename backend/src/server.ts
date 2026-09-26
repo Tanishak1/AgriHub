@@ -15,7 +15,7 @@ const server = createServer(app);
 // CORS config
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(cors({
-  origin: '*', // Allow all origins for simple developer setup
+  origin: FRONTEND_URL,
   credentials: true,
 }));
 
