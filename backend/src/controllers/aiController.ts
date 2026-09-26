@@ -38,18 +38,18 @@ export const getAIRecommendation = async (req: AuthRequest, res: Response) => {
           'AgriHub IoT telemetry channel is ready.',
           'Please pair your ESP32 device via USB to begin live monitoring.',
           'Soil moisture, temperature, and vibration probes awaiting signal.',
-          'Acoustic swarm detectors in standby mode.',
-          'Rainfall precipitation monitoring standby.',
-          'Vegetative canopy index ready for calibration.',
+          'Microphone sensor is in standby until live telemetry is available.',
+          'Rain/wetness sensing is in standby until live telemetry is available.',
+          'Image-based crop-health analysis is not part of this telemetry reading.',
           'Agronomic recommendation engine waiting for live sensor packet stream.'
         ],
         insightsHi: [
           'एग्रीहब IoT टेलीमेट्री चैनल तैयार है।',
           'लाइव निगरानी शुरू करने के लिए कृपया अपने ESP32 डिवाइस को USB से जोड़ें।',
           'मिट्टी की नमी, तापमान और कंपन जांच सिग्नल की प्रतीक्षा में हैं।',
-          'ध्वनि कीट डिटेक्टर स्टैंडबाय मोड में हैं।',
-          'वर्षा निगरानी स्टैंडबाय मोड में है।',
-          'फसल चंदवा सूचकांक कैलिब्रेशन के लिए तैयार है।',
+          'माइक्रोफोन सेंसर लाइव टेलीमेट्री की प्रतीक्षा में है।',
+          'वर्षा/गीलापन सेंसर लाइव टेलीमेट्री की प्रतीक्षा में है।',
+          'इमेज आधारित फसल स्वास्थ्य विश्लेषण इस टेलीमेट्री रीडिंग का हिस्सा नहीं है।',
           'कृषि सलाहकार इंजन लाइव सेंसर डेटा स्ट्रीम की प्रतीक्षा कर रहा है।'
         ],
         speechScript: 'Welcome to AgriHub. Please pair a field device to begin live monitoring.',
@@ -77,7 +77,7 @@ export const getAIRecommendation = async (req: AuthRequest, res: Response) => {
       const initInsights = [
         'Telemetry stream initializing: establishing ESP32 hardware handshake and ADC calibration.',
         'Soil moisture sensors are stabilizing probe baseline across root-zone soil.',
-        'DHT22 micro-climate sensors syncing ambient field temperature.',
+        'DHT11 micro-climate sensors syncing ambient field temperature.',
         'Acoustic precipitation detector verifying rain gauge baseline.',
         'Boundary acoustic microphone array calibrating ambient decibel filters.',
         'Subsurface geophone calibrating ground frequency harmonics.',
@@ -87,7 +87,7 @@ export const getAIRecommendation = async (req: AuthRequest, res: Response) => {
       const initInsightsHi = [
         'टेलीमेट्री स्ट्रीम प्रारंभ हो रही है: ESP32 हार्डवेयर और ADC कैलिब्रेशन स्थापित हो रहा है।',
         'मिट्टी की नमी सेंसर जड़-क्षेत्र में बेसलाइन की जांच कर रहे हैं।',
-        'DHT22 माइक्रो-क्लाइमेट सेंसर परिवेशी तापमान को सिंक कर रहे हैं।',
+        'DHT11 माइक्रो-क्लाइमेट सेंसर परिवेशी तापमान को सिंक कर रहे हैं।',
         'वर्षा मापक यंत्र बेसलाइन का सत्यापन कर रहा है।',
         'खेत सीमा माइक्रोफोन परिवेशी शोर फिल्टर को कैलिब्रेट कर रहा है।',
         'जमीन के नीचे जियोफोन सेंसर सामान्य आवृत्तियों को कैलिब्रेट कर रहा है।',
@@ -130,68 +130,68 @@ export const getAIRecommendation = async (req: AuthRequest, res: Response) => {
 
     // 3. Rainfall Advisory Insight
     insights.push(
-      `Rainfall probability is low at ${rain}%. Dry weather conditions are expected to persist across the field plot.`
+      `Rain/wetness sensor raw reading is ${rain}. Treat this as local sensor evidence, not a weather forecast or rainfall probability.`
     );
     insightsHi.push(
-      `बारिश की संभावना ${rain}% कम है। खेत में शुष्क मौसम बना रहने की संभावना है।`
+      `वर्षा/गीलापन सेंसर की रॉ रीडिंग ${rain} है। इसे मौसम पूर्वानुमान या बारिश की संभावना न मानें।`
     );
 
     // 4. Pest / Acoustic Noise Insight
     if (sound < 40) {
       insights.push(
-        `Acoustic monitoring registers normal background noise (${sound} dB). No active pest swarms or insect disturbances detected.`
+        `Microphone raw reading is ${sound}. No pest conclusion is made from this uncalibrated acoustic value alone.`
       );
       insightsHi.push(
-        `ध्वनि निगरानी सामान्य शोर (${sound} dB) दर्ज कर रही है। कीटों का कोई उपद्रव नहीं पाया गया।`
+        `माइक्रोफोन की रॉ रीडिंग ${sound} है। केवल इस अनकैलिब्रेटेड ध्वनि मान से कीट की पुष्टि नहीं की जाती।`
       );
     } else if (sound < 65) {
       insights.push(
-        `Acoustic sensor fluctuating dynamically (${sound} dB) due to local wind rustle and boundary activity. Monitoring remains active.`
+        `Microphone raw reading is ${sound}. Monitoring remains active; the source of the signal is not inferred automatically.`
       );
       insightsHi.push(
-        `हवा और सीमा गतिविधि के कारण ध्वनि सेंसर (${sound} dB) में उतार-चढ़ाव हो रहा है। निगरानी सक्रिय है।`
+        `माइक्रोफोन की रॉ रीडिंग ${sound} है। निगरानी सक्रिय है; सिग्नल के स्रोत का स्वतः निष्कर्ष नहीं निकाला जाता।`
       );
     } else {
       insights.push(
-        `Elevated acoustic spikes (${sound} dB) detected at perimeter. Routine inspection of crop boundary is suggested.`
+        `Elevated microphone raw reading (${sound}) detected. A manual field inspection is suggested before drawing a conclusion.`
       );
       insightsHi.push(
-        `सीमा पर ध्वनि स्पाइक्स (${sound} dB) दर्ज की गई। फसल परिधि के नियमित निरीक्षण का सुझाव दिया गया है।`
+        `माइक्रोफोन की रॉ रीडिंग (${sound}) बढ़ी हुई है। निष्कर्ष निकालने से पहले खेत का निरीक्षण करें।`
       );
     }
 
     // 5. Soil Vibration Insight
     insights.push(
-      `Soil vibration frequency is stable at ${vibration} Hz. No subsurface burrowing or heavy mechanical disturbances detected.`
+      `Vibration sensor state/raw value is ${vibration}. This value indicates sensor activity and is not a calibrated frequency measurement.`
     );
     insightsHi.push(
-      `मिट्टी का कंपन ${vibration} Hz पर स्थिर है। कोई यांत्रिक व्यवधान या हानिकारक गतिविधि नहीं है।`
+      `कंपन सेंसर का स्टेट/रॉ मान ${vibration} है। यह कैलिब्रेटेड आवृत्ति माप नहीं है।`
     );
 
     // 6. Crop Monitoring Status
     insights.push(
-      'Vegetative canopy index is performing well; vegetative growth and leaf chlorophyll synthesis are within expected seasonal ranges.'
+      'Crop-image health cannot be inferred from the current telemetry packet; image analysis requires a separate validated image pipeline.'
     );
     insightsHi.push(
-      'फसल चंदवा सूचकांक अच्छा प्रदर्शन कर रहा है; वानस्पतिक विकास और क्लोरोफिल संश्लेषण सामान्य सीमा में हैं।'
+      'वर्तमान टेलीमेट्री पैकेट से फसल की इमेज-आधारित सेहत तय नहीं की जा सकती; इसके लिए अलग सत्यापित इमेज पाइपलाइन चाहिए।'
     );
 
     // 7. General Field Health Advisory
     insights.push(
-      'Overall field condition is rated Healthy (88%). Recommended action: Prepare next scheduled fertigation cycle and monitor soil moisture retention.'
+      'Overall field status is derived from available sensor readings only. Continue monitoring moisture, temperature and humidity and inspect the field when warnings appear.'
     );
     insightsHi.push(
-      'खेत की समग्र स्थिति स्वस्थ (88%) है। अनुशंसित कार्रवाई: निर्धारित सिंचाई चक्र की तैयारी करें।'
+      'खेत की स्थिति उपलब्ध सेंसर रीडिंग पर आधारित है। नमी, तापमान और आर्द्रता की निगरानी जारी रखें और चेतावनी मिलने पर खेत का निरीक्षण करें।'
     );
 
-    const healthScore = 88;
-    const priority: 'HIGH' | 'MEDIUM' | 'LOW' = 'LOW';
+    const healthScore = Math.max(0, Math.min(100, 100 - sensors.filter(s => s.status === 'CRITICAL').length * 25 - sensors.filter(s => s.status === 'WARNING').length * 10));
+    const priority: 'HIGH' | 'MEDIUM' | 'LOW' = sensors.some(s => s.status === 'CRITICAL') ? 'HIGH' : sensors.some(s => s.status === 'WARNING') ? 'MEDIUM' : 'LOW';
     const actionRequired = `Soil moisture is at ${moisture}%. Schedule light irrigation within 12–24 hours.`;
     const actionRequiredHi = `मिट्टी की नमी ${moisture}% पर है। अगले 12-24 घंटों में हल्की सिंचाई की योजना बनाएं।`;
-    const weatherSummary = `Clear skies, ${temp}°C. Precipitation probability ${rain}%.`;
-    const weatherSummaryHi = `आसमान साफ, ${temp}°C। बारिश की संभावना ${rain}%।`;
-    const speechScript = `Telemetry active. Current temperature is ${temp} degrees, soil moisture is ${moisture} percent, and field condition is healthy.`;
-    const speechScriptHi = `टेलीमेट्री सक्रिय है। वर्तमान तापमान ${temp} डिग्री और मिट्टी की नमी ${moisture} प्रतिशत है।`;
+    const weatherSummary = `Local sensors: ${temp}°C, ${humidity}% humidity; rain/wetness raw value ${rain}. No external weather forecast is inferred.`;
+    const weatherSummaryHi = `स्थानीय सेंसर: ${temp}°C, ${humidity}% आर्द्रता; वर्षा/गीलापन रॉ मान ${rain}। बाहरी मौसम पूर्वानुमान का अनुमान नहीं लगाया गया है।`;
+    const speechScript = `Telemetry active. Current temperature is ${temp} degrees and soil moisture is ${moisture} percent. Advisory priority is ${priority}.`;
+    const speechScriptHi = `टेलीमेट्री सक्रिय है। वर्तमान तापमान ${temp} डिग्री और मिट्टी की नमी ${moisture} प्रतिशत है। सलाह की प्राथमिकता ${priority} है।`;
 
     return res.json({
       healthScore,
